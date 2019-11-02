@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "siteName": {
+            "type": "string",
+        },
+        "siteLocation": {
+            "type": "string",
+            "defaultValue": "East US"
+        },
+        "sku": {
+            "type": "string",
+            "allowedValues": [
+                "Free",
+                "Shared",
+                "Basic",
+                "Standard"
+            ],
+            "defaultValue": "Free"
+        }
+    },
+    "resources": [
+    ],
+    "outputs": {
+        "name": {
+            "type": "string",
+            "value": "[parameters('siteName')]"
+        },
+        "location": {
+            "type": "string",
+            "value": "[parameters('siteLocation')]"
+        },
+        "sku": {
+            "type": "string",
+            "value": "[parameters('sku')]"
+        }
+    }
+}

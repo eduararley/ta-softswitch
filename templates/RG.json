@@ -1,0 +1,22 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "deployName": {
+            "type": "string",
+            "defaultValue": "softsw"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-05-01",
+            "name": "[parameters('deployName')]",
+            "type": "Microsoft.Resources/resourceGroups",
+            "location": "[parameters('location')]"
+          }
+    ]
+}

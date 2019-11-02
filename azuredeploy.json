@@ -2,17 +2,26 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "siteName": {
+            "type": "string"
+        },
         "siteLocation": {
             "type": "string",
             "defaultValue": "East US"
         },
+        "sku": {
+            "type": "string",
+            "allowedValues": [
+                "Free",
+                "Shared",
+                "Basic",
+                "Standard"
+            ],
+            "defaultValue": "Free"
+        },
         "dbVersion": {
             "type": "string",
             "defaultValue": "10.2"
-        },
-        "deployZone": {
-            "type": "string",
-            "defaultValue": "1"
         },
         "deployUser": {
             "type": "string",
@@ -113,7 +122,7 @@
                 "name": "Standard"
             },
             "zones": [
-                "[parameters('deployZone')]"
+                "[parameters('siteLocation')]"
             ]
         },
         {
@@ -309,7 +318,7 @@
                 "type": "SystemAssigned"
             },
             "zones": [
-                "[parameters('deployZone')]"
+                "1"
             ],
             "resources": [
                 {

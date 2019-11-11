@@ -3,7 +3,8 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "siteName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "ta-softsw"
         },
         "siteLocation": {
             "type": "string",
@@ -19,26 +20,12 @@
             ],
             "defaultValue": "Free"
         },
-        "deployPrefix": {
-            "type": "string",
-            "defaultValue": "ta",
-            "metadata": {
-                "description": "Prefix for all deployed components. Usually two letters."
-            }
-        },
-        "deployUser": {
-            "type": "string",
-            "defaultValue": "softsw",
-            "metadata": {
-                "description": "Deployment name."
-            }
-        },
         "deployPass": {
             "type": "string"
         },
         "deployScript": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/eduararley/ta-softswitch/master/templates/deploy.sh"
+            "defaultValue": "https://raw.githubusercontent.com/eduararley/ta-softswitch/master/scripts/deploy.sh"
         },
         "addressPrefix": {
             "type": "string",
@@ -115,13 +102,13 @@
         },
         {
             "apiVersion": "2019-02-01",
-            "name": "swVmPublicIP",
+            "name": "swVmPublicIP-01",
             "type": "Microsoft.Network/publicIPAddresses",
             "location": "[resourceGroup().location]",
             "properties": {
                 "publicIPAllocationMethod": "[parameters('addressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('deployUser')]"
+                    "domainNameLabel": "[concat(parameters('siteName'), '-01')]"
                 }
             },
             "sku": {
@@ -217,7 +204,7 @@
             "location": "[resourceGroup().location]",
             "properties": {
                 "version": "[variables('dbVersion')]",
-                "administratorLogin": "[parameters('deployUser')]",
+                "administratorLogin": "[concat(parameters('siteName'), '-admin')]",
                 "administratorLoginPassword": "[parameters('deployPass')]",
                 "createMode": "Default",
                 "storageProfile": {
@@ -315,7 +302,7 @@
                 },
                 "osProfile": {
                     "computerName": "swSipVm",
-                    "adminUsername": "[parameters('deployUser')]",
+                    "adminUsername": "[concat(parameters('siteName'), '-admin')]",
                     "adminPassword": "[parameters('deployPass')]"
                 }
             },
@@ -405,7 +392,7 @@
             "resources": [
                 {
                     "apiVersion": "2016-10-01",
-                    "name": "[parameters('deployUser')]",
+                    "name": "[concat(parameters('siteName'), '-admin')]",
                     "type": "secrets",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [

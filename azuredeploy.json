@@ -51,6 +51,13 @@
     },
     "variables": {
         "dbVersion": "10.2",
+        "dbSku": {
+            "name": "GP_Gen5_2",
+            "tier": "GeneralPurpose",
+            "capacity": 2,
+            "family": "Gen5",
+            "sizeMB": 5120
+        },
         "skuName": "GP_Gen5_2",
         "skuTier": "GeneralPurpose",
         "skuCapacity": 2,
@@ -175,7 +182,7 @@
             "dependsOn": [
                 "[concat('Microsoft.Network/networkSecurityGroups/', 'swNetSecGroup')]",
                 "[concat('Microsoft.Network/virtualNetworks/', 'swVirtNet')]",
-                "[concat('Microsoft.Network/publicIpAddresses/', 'swVmPublicIP')]"
+                "[concat('Microsoft.Network/publicIpAddresses/', 'swVmPublicIP-01')]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -187,7 +194,7 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', 'swVmPublicIP')]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', 'swVmPublicIP-01')]"
                             }
                         }
                     }
@@ -214,7 +221,7 @@
                 }
             },
             "sku": {
-                "name": "[variables('skuName')]",
+                "name": "[variables('dbSku').name]",
                 "tier": "[variables('skuTier')]",
                 "size": "[variables('skuSizeMB')]",
                 "family": "[variables('skuFamily')]",
@@ -408,11 +415,11 @@
     "outputs": {
         "VmIpAddress": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'swVmPublicIP')).IpAddress]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'swVmPublicIP-01')).IpAddress]"
         },
         "VmUrl": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'swVmPublicIP')).dnsSettings.fqdn]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'swVmPublicIP-01')).dnsSettings.fqdn]"
         },
         "DbServerName": {
             "type": "string",

@@ -19,17 +19,22 @@
             ],
             "defaultValue": "Free"
         },
-        "dbVersion": {
+        "deployPrefix": {
             "type": "string",
-            "defaultValue": "10.2"
+            "defaultValue": "ta",
+            "metadata": {
+                "description": "Prefix for all deployed components. Usually two letters."
+            }
         },
         "deployUser": {
             "type": "string",
-            "defaultValue": "tasoftsw"
+            "defaultValue": "softsw",
+            "metadata": {
+                "description": "Deployment name."
+            }
         },
         "deployPass": {
-            "type": "string",
-            "defaultValue": "[concat('P', uniqueString(newGuid()), 'x!')]"
+            "type": "string"
         },
         "deployScript": {
             "type": "string",
@@ -58,6 +63,7 @@
         }
     },
     "variables": {
+        "dbVersion": "10.2",
         "skuName": "GP_Gen5_2",
         "skuTier": "GeneralPurpose",
         "skuCapacity": 2,
@@ -210,7 +216,7 @@
             "type": "Microsoft.DBforMariaDB/servers",
             "location": "[resourceGroup().location]",
             "properties": {
-                "version": "[parameters('dbVersion')]",
+                "version": "[variables('dbVersion')]",
                 "administratorLogin": "[parameters('deployUser')]",
                 "administratorLoginPassword": "[parameters('deployPass')]",
                 "createMode": "Default",
@@ -244,17 +250,16 @@
             ]
         },
         {
-            "apiVersion": "2014-11-01",
+            "apiVersion": "2016-09-01",
             "name": "swAppServer",
             "type": "Microsoft.Web/serverfarms",
             "location": "[resourceGroup().location]",
             "kind": "linux",
             "properties": {
-                "workerSize": "[variables('workerSize')]",
-                "workerSizeId": "[variables('workerSizeId')]",
-                "numberOfWorkers": "[variables('numberOfWorkers')]",
-                "reserved": true,
-                "sku": "[parameters('sku')]"
+                "reserved": true
+            },
+            "sku": {
+                "tier": "Free"
             }
         },
         {

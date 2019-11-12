@@ -57,18 +57,12 @@
                 "description": "Type of IP address"
             }
         },
-        "vmSize": {
-            "type": "string",
-            "defaultValue": "Standard_B1s"
-        },
-        "diskType": {
-            "type": "string",
-            "defaultValue": "Premium_LRS"
-        },
-        "diskSize": {
+        "nodes": {
             "type": "int",
-            "minValue": 31,
-            "defaultValue": 31
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Number of VoIP nodes to be deployed"
+            }
         }
     },
     "variables": {
@@ -87,8 +81,8 @@
             "mb": 31
         },
         "webSku": {
-            "name": "Free",
-            "tier": "F1"
+            "name": "F1",
+            "tier": "Free"
         }
     },
     "resources": [
@@ -129,13 +123,13 @@
         },
         {
             "apiVersion": "2019-02-01",
-            "name": "swVmPublicIP-01",
+            "name": "[concat('swVmPublicIP-0', copyIndex())]",
             "type": "Microsoft.Network/publicIPAddresses",
             "location": "[resourceGroup().location]",
             "properties": {
                 "publicIPAllocationMethod": "[parameters('addressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[concat(parameters('siteName'), '-01')]"
+                    "domainNameLabel": "[concat(parameters('siteName'), '-0', copyIndex())]"
                 }
             },
             "sku": {
@@ -143,7 +137,11 @@
             },
             "zones": [
                 "1"
-            ]
+            ],
+            "copy": {
+                "name": "ipCopy",
+                "count": "[parameters('nodes')]"
+            }        
         },
         {
             "apiVersion": "2019-02-01",
@@ -196,13 +194,13 @@
         },
         {
             "apiVersion": "2018-10-01",
-            "name": "swVmNetInterface",
+            "name": "[concat('swVmNetInterface0', copyIndex())]",
             "type": "Microsoft.Network/networkInterfaces",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Network/networkSecurityGroups/', 'swNetSecGroup')]",
                 "[concat('Microsoft.Network/virtualNetworks/', 'swVirtNet')]",
-                "[concat('Microsoft.Network/publicIpAddresses/', 'swVmPublicIP-01')]"
+                "[concat('Microsoft.Network/publicIpAddresses/', 'swVmPublicIP-0', copyIndex())]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -222,6 +220,10 @@
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'swNetSecGroup')]"
                 }
+            },
+            "copy": {
+                "name": "netCopy",
+                "count": "[parameters('nodes')]"
             }
         },
         {
@@ -300,7 +302,7 @@
             "type": "Microsoft.Compute/virtualMachines",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', 'swVmNetInterface')]"
+                "[concat('Microsoft.Network/networkInterfaces/', 'swVmNetInterface0', copyIndex())]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -340,6 +342,10 @@
             "zones": [
                 "1"
             ],
+            "copy": {
+                "name": "vmCopy",
+                "count": "[parameters('nodes')]"
+            },
             "resources": [
                 {
                     "apiVersion": "2019-03-01",

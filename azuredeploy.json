@@ -123,13 +123,13 @@
         },
         {
             "apiVersion": "2019-02-01",
-            "name": "[concat('swVmPublicIP-0', copyIndex())]",
+            "name": "[concat('swVmPublicIP-0', copyIndex(1))]",
             "type": "Microsoft.Network/publicIPAddresses",
             "location": "[resourceGroup().location]",
             "properties": {
                 "publicIPAllocationMethod": "[parameters('addressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[concat(parameters('siteName'), '-0', copyIndex())]"
+                    "domainNameLabel": "[concat(parameters('siteName'), '-0', copyIndex(1))]"
                 }
             },
             "sku": {
@@ -194,13 +194,13 @@
         },
         {
             "apiVersion": "2018-10-01",
-            "name": "[concat('swVmNetInterface0', copyIndex())]",
+            "name": "[concat('swVmNetInterface0', copyIndex(1))]",
             "type": "Microsoft.Network/networkInterfaces",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Network/networkSecurityGroups/', 'swNetSecGroup')]",
                 "[concat('Microsoft.Network/virtualNetworks/', 'swVirtNet')]",
-                "[concat('Microsoft.Network/publicIpAddresses/', 'swVmPublicIP-0', copyIndex())]"
+                "[concat('Microsoft.Network/publicIpAddresses/', 'swVmPublicIP-0', copyIndex(1))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -212,7 +212,7 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', 'swVmPublicIP-01')]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', concat('swVmPublicIP-0', copyIndex(1)))]"
                             }
                         }
                     }
@@ -302,7 +302,7 @@
             "type": "Microsoft.Compute/virtualMachines",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', 'swVmNetInterface0', copyIndex())]"
+                "[concat('Microsoft.Network/networkInterfaces/', 'swVmNetInterface0', copyIndex(1))]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -326,7 +326,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'swVmNetInterface')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('swVmNetInterface0', copyIndex(1)))]"
                         }
                     ]
                 },
@@ -443,14 +443,6 @@
         }
     ],
     "outputs": {
-        "VmIpAddress": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'swVmPublicIP-01')).IpAddress]"
-        },
-        "VmUrl": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'swVmPublicIP-01')).dnsSettings.fqdn]"
-        },
         "DbServerName": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.DBforMariaDB/servers', 'swDatabase')).fullyQualifiedDomainName]"

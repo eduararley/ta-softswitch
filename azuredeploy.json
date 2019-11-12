@@ -4,11 +4,17 @@
     "parameters": {
         "siteName": {
             "type": "string",
-            "defaultValue": "ta-softsw"
+            "defaultValue": "ta-softsw",
+            "metadata": {
+                "description": "General name of the deployment"
+            }
         },
         "siteLocation": {
             "type": "string",
-            "defaultValue": "East US"
+            "defaultValue": "East US",
+            "metadata": {
+                "description": "Region for deployment"
+            }
         },
         "sku": {
             "type": "string",
@@ -18,22 +24,38 @@
                 "Basic",
                 "Standard"
             ],
-            "defaultValue": "Free"
+            "defaultValue": "Free",
+            "metadata": {
+                "description": "Package"
+            }
+
         },
         "deployPass": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Password for all related components"
+            }
         },
         "deployScript": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/eduararley/ta-softswitch/master/scripts/deploy.sh"
+            "defaultValue": "https://raw.githubusercontent.com/eduararley/ta-softswitch/master/scripts/deploy.sh",
+            "metadata": {
+                "description": "Script to finish the deployment from VM"
+            }
         },
         "addressPrefix": {
             "type": "string",
-            "defaultValue": "10.191.31.0/24"
+            "defaultValue": "10.191.31.0/24",
+            "metadata": {
+                "description": "Address segment for the deployment"
+            }
         },
         "addressType": {
             "type": "string",
-            "defaultValue": "Static"
+            "defaultValue": "Static",
+            "metadata": {
+                "description": "Type of IP address"
+            }
         },
         "vmSize": {
             "type": "string",
@@ -56,20 +78,18 @@
             "tier": "GeneralPurpose",
             "capacity": 2,
             "family": "Gen5",
-            "sizeMB": 5120
+            "size": 5120,
+            "backupDays": 7
         },
-        "skuName": "GP_Gen5_2",
-        "skuTier": "GeneralPurpose",
-        "skuCapacity": 2,
-        "skuFamily": "Gen5",
-        "skuSizeMB": 5120,
-        "backupRetentionDays": 7,
-        "geoRedundantBackup": "Disabled",
-        "sku": "Free",
-        "skuCode": "F1",
-        "workerSize": "0",
-        "workerSizeId": "0",
-        "numberOfWorkers": "1"
+        "vmSku": {
+            "size": "Standard_B1s",
+            "disk": "Premium_LRS",
+            "mb": 31
+        },
+        "webSku": {
+            "name": "Free",
+            "tier": "F1"
+        }
     },
     "resources": [
         {
@@ -215,17 +235,17 @@
                 "administratorLoginPassword": "[parameters('deployPass')]",
                 "createMode": "Default",
                 "storageProfile": {
-                    "storageMB": "[variables('skuSizeMB')]",
-                    "backupRetentionDays": "[variables('backupRetentionDays')]",
-                    "geoRedundantBackup": "[variables('geoRedundantBackup')]"
+                    "storageMB": "[variables('dbSku').size]",
+                    "backupRetentionDays": "[variables('dbSku').backupDays]",
+                    "geoRedundantBackup": "Disabled"
                 }
             },
             "sku": {
                 "name": "[variables('dbSku').name]",
-                "tier": "[variables('skuTier')]",
-                "size": "[variables('skuSizeMB')]",
-                "family": "[variables('skuFamily')]",
-                "capacity": "[variables('skuCapacity')]"
+                "tier": "[variables('dbSku').tier]",
+                "size": "[variables('dbSku').size]",
+                "family": "[variables('dbSku').family]",
+                "capacity": "[variables('dbSku').capacity]"
             },
             "resources": [
                 {
@@ -253,7 +273,8 @@
                 "reserved": true
             },
             "sku": {
-                "tier": "Free"
+                "name": "[variables('webSku').name]",
+                "tier": "[variables('webSku').tier]"
             }
         },
         {
@@ -283,15 +304,15 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('vmSize')]"
+                    "vmSize": "[variables('vmSku').size]"
                 },
                 "storageProfile": {
                     "osDisk": {
                         "createOption": "FromImage",
                         "managedDisk": {
-                            "storageAccountType": "[parameters('diskType')]"
+                            "storageAccountType": "[variables('vmSku').disk]"
                         },
-                        "diskSizeGB": "[parameters('diskSize')]"
+                        "diskSizeGB": "[variables('vmSku').mb]"
                     },
                     "imageReference": {
                         "publisher": "OpenLogic",
@@ -334,8 +355,11 @@
                         "typeHandlerVersion": "2.0",
                         "settings": {},
                         "protectedSettings": {
-                            "commandToExecute": "[concat('curl -Lo /usr/local/src/deploy.sh ', parameters('deployScript'), ' && sh /usr/local/src/deploy.sh')]"
+                            "commandToExecute": "whoami"
                         }
+                    },
+                    "metadata": {
+                        "protectedSettings_commandToExecute": "[concat('curl -Lo /usr/local/src/deploy.sh ', parameters('deployScript'), ' && sh /usr/local/src/deploy.sh')]"
                     }
                 }
             ]

@@ -298,7 +298,7 @@
         },
         {
             "apiVersion": "2019-03-01",
-            "name": "swSipVm",
+            "name": "[concat('swSipVm-0', copyIndex(1))]",
             "type": "Microsoft.Compute/virtualMachines",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -331,7 +331,7 @@
                     ]
                 },
                 "osProfile": {
-                    "computerName": "swSipVm",
+                    "computerName": "[concat('swSipVm-0', copyIndex(1))]",
                     "adminUsername": "[concat(parameters('siteName'), '-admin')]",
                     "adminPassword": "[parameters('deployPass')]"
                 }
@@ -353,7 +353,7 @@
                     "type": "extensions",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm')]"
+                        "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm-0', copyIndex(1))]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Azure.Extensions",
@@ -375,12 +375,16 @@
             "name": "[guid(resourceGroup().id)]",
             "type": "Microsoft.Authorization/roleAssignments",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm')]"
+                "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm-0', copyIndex(1))]"
             ],
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', 'swSipVm'), '2019-03-01', 'Full').identity.principalId]",
+                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', concat('swSipVm-0', copyIndex(1))), '2019-03-01', 'Full').identity.principalId]",
                 "scope": "[resourceGroup().id]"
+            },
+            "copy": {
+                "name": "roleCopy",
+                "count": "[parameters('nodes')]"
             }
         },
         {
@@ -390,7 +394,7 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Network/virtualNetworks/', 'swVirtNet')]",
-                "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm')]"
+                "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm-0', copyIndex(1))]"
             ],
             "properties": {
                 "enabledForDeployment": true,
@@ -400,17 +404,21 @@
                     "name": "standard",
                     "family": "A"
                 },
-                "accessPolicies": [
+                "copy": [
                     {
-                        "tenantId": "[subscription().tenantId]",
-                        "objectId": "[reference(resourceId('Microsoft.Compute/virtualMachines', 'swSipVm'), '2019-03-01', 'Full').identity.principalId]",
-                        "permissions": {
-                            "keys": [],
-                            "secrets": [
-                                "list",
-                                "get"
-                            ],
-                            "certificates": []
+                        "name": "accessPolicies",
+                        "count": "[parameters('nodes')]",
+                        "input": {
+                            "tenantId": "[subscription().tenantId]",
+                            "objectId": "[reference(resourceId('Microsoft.Compute/virtualMachines', concat('swSipVm-0', copyIndex('accessPolicies', 1))), '2019-03-01', 'Full').identity.principalId]",
+                            "permissions": {
+                                "keys": [],
+                                "secrets": [
+                                    "list",
+                                    "get"
+                                ],
+                                "certificates": []
+                            }    
                         }
                     }
                 ],
@@ -439,7 +447,11 @@
                         "value": "[parameters('deployPass')]"
                     }
                 }
-            ]
+            ],
+            "copy": {
+                "name": "keyVaultCopy",
+                "count": "[parameters('nodes')]"
+            }
         }
     ],
     "outputs": {

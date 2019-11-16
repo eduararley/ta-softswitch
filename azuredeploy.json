@@ -9,13 +9,6 @@
                 "description": "General name of the deployment"
             }
         },
-        "siteLocation": {
-            "type": "string",
-            "defaultValue": "East US",
-            "metadata": {
-                "description": "Region for deployment"
-            }
-        },
         "sku": {
             "type": "string",
             "allowedValues": [
@@ -59,7 +52,6 @@
         },
         "nodes": {
             "type": "int",
-            "defaultValue": 1,
             "metadata": {
                 "description": "Number of VoIP nodes to be deployed"
             }
@@ -372,7 +364,7 @@
         },
         {
             "apiVersion": "2017-09-01",
-            "name": "[guid(resourceGroup().id)]",
+            "name": "[guid(resourceGroup().id, string(copyIndex(1)))]",
             "type": "Microsoft.Authorization/roleAssignments",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm-0', copyIndex(1))]"
@@ -394,7 +386,7 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Network/virtualNetworks/', 'swVirtNet')]",
-                "[concat('Microsoft.Compute/virtualMachines/', 'swSipVm-0', copyIndex(1))]"
+                "vmCopy"
             ],
             "properties": {
                 "enabledForDeployment": true,
@@ -447,11 +439,7 @@
                         "value": "[parameters('deployPass')]"
                     }
                 }
-            ],
-            "copy": {
-                "name": "keyVaultCopy",
-                "count": "[parameters('nodes')]"
-            }
+            ]
         }
     ],
     "outputs": {

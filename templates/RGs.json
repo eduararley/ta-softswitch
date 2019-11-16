@@ -2,9 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "deployName": {
+        "prefix": {
             "type": "string",
-            "defaultValue": "softsw"
+            "defaultValue": "ta"
         },
         "location": {
             "type": "string",
@@ -14,9 +14,15 @@
     "resources": [
         {
             "apiVersion": "2018-05-01",
-            "name": "[parameters('deployName')]",
+            "name": "[concat(parameters('prefix'), 'Network')]",
             "type": "Microsoft.Resources/resourceGroups",
             "location": "[parameters('location')]"
-          }
+        },
+        {
+            "apiVersion": "2018-05-01",
+            "name": "[concat(parameters('prefix'), 'Workers')]",
+            "type": "Microsoft.Resources/resourceGroups",
+            "location": "[parameters('location')]"
+        }
     ]
 }

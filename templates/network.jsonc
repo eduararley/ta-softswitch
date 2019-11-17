@@ -1,0 +1,81 @@
+// Deploy this template to Network resource group
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "apiVersion": "2019-02-01",
+            "name": "secGroup",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "properties": {},
+            "resources": [
+                {
+                    "apiVersion": "2019-02-01",
+                    "name": "SSH",
+                    "type": "securityRules",
+                    "dependsOn": [
+                        "secGroup"
+                    ],
+                    "properties": {
+                        "priority": 1000,
+                        "protocol": "Tcp",
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "22"
+                    }
+                },                {
+                    "apiVersion": "2019-02-01",
+                    "name": "SIP",
+                    "type": "securityRules",
+                    "dependsOn": [
+                        "secGroup"
+                    ],
+                    "properties": {
+                        "priority": 1100,
+                        "protocol": "*",
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "5060"
+                    }
+                },
+                {
+                    "apiVersion": "2019-02-01",
+                    "name": "RTP",
+                    "type": "securityRules",
+                    "dependsOn": [
+                        "secGroup"
+                    ],
+                    "properties": {
+                        "priority": 1200,
+                        "protocol": "Udp",
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "16384-32768"
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2019-09-01",
+            "name": "ipRange",
+            "type": "Microsoft.Network/publicIPPrefixes",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "prefixLength": 31,
+                "publicIPAddressVersion": "IPv4",
+                "ipTags": []
+            }
+        }
+    ]
+}

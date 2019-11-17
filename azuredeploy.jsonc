@@ -1,3 +1,4 @@
+// Deploy this template to Workers resource group
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
@@ -134,55 +135,6 @@
                 "name": "ipCopy",
                 "count": "[parameters('nodes')]"
             }        
-        },
-        {
-            "apiVersion": "2019-02-01",
-            "name": "swNetSecGroup",
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "SSH",
-                        "properties": {
-                            "priority": 1000,
-                            "protocol": "Tcp",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "22"
-                        }
-                    },
-                    {
-                        "name": "SIP",
-                        "properties": {
-                            "priority": 1100,
-                            "protocol": "*",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "5060"
-                        }
-                    },
-                    {
-                        "name": "RTP",
-                        "properties": {
-                            "priority": 1200,
-                            "protocol": "Udp",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "16384-32768"
-                        }
-                    }
-                ]
-            }
         },
         {
             "apiVersion": "2018-10-01",

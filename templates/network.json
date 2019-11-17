@@ -5,7 +5,63 @@
         "author": "Eduar Cardona",
         "comments": "Deploy into Network resource group"
     },
+    "parameters": {
+        "addressPrefix": {
+            "type": "string",
+            "defaultValue": "10.191.31.0/24",
+            "metadata": {
+                "description": "Address segment for the deployment"
+            }
+        },
+        "deployPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Prefix for all Resource groups"
+            }
+        },
+        "nodes": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of VoIP nodes to be deployed"
+            }
+        }
+    },
     "resources": [
+        {
+            "apiVersion": "2019-04-01",
+            "name": "virtNet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "subNet",
+                        "properties": {
+                            "addressPrefix": "[parameters('addressPrefix')]",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.Sql",
+                                    "locations": [
+                                        "[resourceGroup().location]"
+                                    ]
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault",
+                                    "locations": [
+                                        "[resourceGroup().location]"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
         {
             "apiVersion": "2019-02-01",
             "name": "secGroup",
@@ -30,7 +86,8 @@
                         "destinationAddressPrefix": "*",
                         "destinationPortRange": "22"
                     }
-                },                {
+                },
+                {
                     "apiVersion": "2019-02-01",
                     "name": "SIP",
                     "type": "securityRules",
@@ -80,6 +137,64 @@
                 "prefixLength": 31,
                 "publicIPAddressVersion": "IPv4",
                 "ipTags": []
+            }
+        },
+        {
+            "apiVersion": "2019-02-01",
+            "name": "[concat('swVmPublicIP-0', copyIndex(1))]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "ipRange"
+            ],
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(parameters('deployPrefix'), '-swSipVM', '-0', copyIndex(1)))]"
+                },
+                "publicIPPrefix": {
+                    "id": "[resourceId('Microsoft.Network/publicIPPrefixes', 'ipRange')]"
+                }
+            },
+            "sku": {
+                "name": "Standard"
+            },
+            "copy": {
+                "name": "ipCopy",
+                "count": "[parameters('nodes')]"
+            }
+        },
+        {
+            "apiVersion": "2018-10-01",
+            "name": "[concat('swVmNetInterface0', copyIndex(1))]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "virtNet",
+                "ipCopy"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'virtNet'), '/subnets/', 'subNet')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', concat('swVmPublicIP-0', copyIndex(1)))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'secGroup')]"
+                }
+            },
+            "copy": {
+                "name": "netCopy",
+                "count": "[parameters('nodes')]"
             }
         }
     ]

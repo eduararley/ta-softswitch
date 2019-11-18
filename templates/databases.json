@@ -1,0 +1,108 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+        "author": "Eduar Cardona",
+        "comments": "Deploy into Databases resource group"
+    },
+    "parameters": {
+        "siteName": {
+            "type": "string",
+            "defaultValue": "ta-softsw",
+            "metadata": {
+                "description": "General name of the deployment"
+            }
+        },
+        "sku": {
+            "type": "string",
+            "allowedValues": [
+                "Basic",
+                "Standard"
+            ],
+            "defaultValue": "Basic",
+            "metadata": {
+                "description": "Package size"
+            }
+        },
+        "deployPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Prefix for all Resource groups"
+            }
+        },
+        "deployPass": {
+            "type": "string",
+            "metadata": {
+                "description": "Password for all related components"
+            }
+        },
+        "nodes": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of VoIP nodes to be deployed"
+            }
+        }
+    },
+    "variables": {
+        "dbVersion": "10.3",
+        "dbSku": {
+            "Basic": {
+                "name": "B_Gen5_1",
+                "tier": "Basic",
+                "capacity": 1,
+                "family": "Gen5",
+                "size": 5120,
+                "backupDays": 7
+            },
+            "Standard": {
+                "name": "GP_Gen5_2",
+                "tier": "GeneralPurpose",
+                "capacity": 2,
+                "family": "Gen5",
+                "size": 5120,
+                "backupDays": 7
+            }
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-06-01",
+            "name": "swDatabase",
+            "type": "Microsoft.DBforMariaDB/servers",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "version": "[variables('dbVersion')]",
+                "administratorLogin": "[concat(parameters('siteName'), '-admin')]",
+                "administratorLoginPassword": "[parameters('deployPass')]",
+                "createMode": "Default",
+                "storageProfile": {
+                    "storageMB": "[variables('dbSku')[parameters('sku')].size]",
+                    "backupRetentionDays": "[variables('dbSku')[parameters('sku')].backupDays]",
+                    "geoRedundantBackup": "Disabled"
+                }
+            },
+            "sku": {
+                "name": "[variables('dbSku')[parameters('sku')].name]",
+                "tier": "[variables('dbSku')[parameters('sku')].tier]",
+                "size": "[variables('dbSku')[parameters('sku')].size]",
+                "family": "[variables('dbSku')[parameters('sku')].family]",
+                "capacity": "[variables('dbSku')[parameters('sku')].capacity]"
+            },
+            "resources": [
+                {
+                    "condition": "[equals(parameters('sku'),'Standard')]",
+                    "apiVersion": "2018-06-01",
+                    "name": "allowFromVnet",
+                    "type": "virtualNetworkRules",
+                    "dependsOn": [
+                        "swDatabase"
+                    ],
+                    "properties": {
+                        "virtualNetworkSubnetId": "[concat(resourceId(concat(parameters('deployPrefix'), 'Network'), 'Microsoft.Network/virtualNetworks', 'virtNet'), '/subnets/', 'subNet')]",
+                        "ignoreMissingVnetServiceEndpoint": true
+                    }
+                }
+            ]
+        }
+    ]
+}

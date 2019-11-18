@@ -16,12 +16,10 @@
         "sku": {
             "type": "string",
             "allowedValues": [
-                "Free",
-                "Shared",
                 "Basic",
                 "Standard"
             ],
-            "defaultValue": "Free",
+            "defaultValue": "Basic",
             "metadata": {
                 "description": "Package size"
             }
@@ -55,12 +53,22 @@
     "variables": {
         "dbVersion": "10.2",
         "dbSku": {
-            "name": "GP_Gen5_2",
-            "tier": "GeneralPurpose",
-            "capacity": 2,
-            "family": "Gen5",
-            "size": 5120,
-            "backupDays": 7
+            "Basic": {
+                "name": "B_Gen5_1",
+                "tier": "Basic",
+                "capacity": 1,
+                "family": "Gen5",
+                "size": 5120,
+                "backupDays": 7
+            },
+            "Standard": {
+                "name": "GP_Gen5_2",
+                "tier": "GeneralPurpose",
+                "capacity": 2,
+                "family": "Gen5",
+                "size": 5120,
+                "backupDays": 7
+            }
         },
         "vmSku": {
             "size": "Standard_B1s",
@@ -84,17 +92,17 @@
                 "administratorLoginPassword": "[parameters('deployPass')]",
                 "createMode": "Default",
                 "storageProfile": {
-                    "storageMB": "[variables('dbSku').size]",
-                    "backupRetentionDays": "[variables('dbSku').backupDays]",
+                    "storageMB": "[variables('dbSku')[parameters('sku')].size]",
+                    "backupRetentionDays": "[variables('dbSku')[parameters('sku')].backupDays]",
                     "geoRedundantBackup": "Disabled"
                 }
             },
             "sku": {
-                "name": "[variables('dbSku').name]",
-                "tier": "[variables('dbSku').tier]",
-                "size": "[variables('dbSku').size]",
-                "family": "[variables('dbSku').family]",
-                "capacity": "[variables('dbSku').capacity]"
+                "name": "[variables('dbSku')[parameters('sku')].name]",
+                "tier": "[variables('dbSku')[parameters('sku')].tier]",
+                "size": "[variables('dbSku')[parameters('sku')].size]",
+                "family": "[variables('dbSku')[parameters('sku')].family]",
+                "capacity": "[variables('dbSku')[parameters('sku')].capacity]"
             },
             "resources": [
                 {
@@ -127,14 +135,14 @@
         },
         {
             "apiVersion": "2016-08-01",
-            "name": "ta-swWebApp",
+            "name": "ta-softsw-web",
             "type": "Microsoft.Web/sites",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "swAppServer"
             ],
             "properties": {
-                "name": "ta-swWebApp",
+                "name": "ta-softsw-web",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', 'swAppServer')]",
                 "siteConfig": {
                     "linuxFxVersion": "PHP|7.3",
@@ -183,7 +191,7 @@
                 "type": "SystemAssigned"
             },
             "zones": [
-                "1"
+                "[copyIndex(1)]"
             ],
             "copy": {
                 "name": "vmCopy",
@@ -260,7 +268,7 @@
                                     "get"
                                 ],
                                 "certificates": []
-                            }    
+                            }
                         }
                     }
                 ],
@@ -303,7 +311,7 @@
         },
         "webUrl": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Web/sites', 'ta-swWebApp')).defaultHostName]"
+            "value": "[reference(resourceId('Microsoft.Web/sites', 'ta-softsw-web')).defaultHostName]"
         }
     }
 }

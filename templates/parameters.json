@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "deployPrefix": {
+            "value": "ta"
+        },
+        "deployPass": {
+            "value": "noKiaE50-2"
+        },
+        "nodes": {
+            "value": 2
+        }
+    }
+}

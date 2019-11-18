@@ -27,6 +27,12 @@
             "name": "[concat(parameters('prefix'), 'Workers')]",
             "type": "Microsoft.Resources/resourceGroups",
             "location": "[parameters('location')]"
+        },
+        {
+            "apiVersion": "2018-05-01",
+            "name": "[concat(parameters('prefix'), 'Databases')]",
+            "type": "Microsoft.Resources/resourceGroups",
+            "location": "[parameters('location')]"
         }
     ]
 }

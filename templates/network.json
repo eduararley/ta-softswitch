@@ -19,6 +19,12 @@
                 "description": "Prefix for all Resource groups"
             }
         },
+        "deployPass": {
+            "type": "string",
+            "metadata": {
+                "description": "Password for all related components"
+            }
+        },
         "nodes": {
             "type": "int",
             "metadata": {
@@ -150,7 +156,7 @@
             "properties": {
                 "publicIPAllocationMethod": "Static",
                 "dnsSettings": {
-                    "domainNameLabel": "[toLower(concat(parameters('deployPrefix'), '-swSipVM', '-0', copyIndex(1)))]"
+                    "domainNameLabel": "[toLower(concat(parameters('deployPrefix'), '-softsw-0', copyIndex(1)))]"
                 },
                 "publicIPPrefix": {
                     "id": "[resourceId('Microsoft.Network/publicIPPrefixes', 'ipRange')]"

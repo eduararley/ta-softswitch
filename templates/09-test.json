@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+        "author": "Eduar Cardona",
+        "comments": "Test"
+    },
+    "variables": {
+        "deployName": "[substring(deployment().name, 3)]"
+    },
+    "resources": [],
+    "outputs": {
+        "deployName": {
+            "type": "string",
+            "value": "[variables('deployName')]"
+        }
+    }
+}

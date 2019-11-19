@@ -101,6 +101,18 @@
                         "virtualNetworkSubnetId": "[concat(resourceId(concat(parameters('deployPrefix'), 'Network'), 'Microsoft.Network/virtualNetworks', 'virtNet'), '/subnets/', 'subNet')]",
                         "ignoreMissingVnetServiceEndpoint": true
                     }
+                },
+                {
+                    "apiVersion": "2018-06-01",
+                    "name": "AllowAllWindowsAzureIps",
+                    "type": "firewallRules",
+                    "dependsOn": [
+                        "swDatabase"
+                    ],
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
                 }
             ]
         }

@@ -2,7 +2,10 @@
 
 #This script finishes the deployment from softswitch VM
 
-# Install required packagesS
+prefix=$1
+site=$2
+
+# Install required packages
 yum -y update
 yum -y install\
   centos-release-scl\
@@ -35,14 +38,19 @@ azKey=$(curl "http://169.254.169.254/metadata/identity/oauth2/token?api-version=
   python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 azSub=$(curl "${azUrl}/subscriptions?api-version=2016-09-01" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
-azRg=$(curl "${azUrl}${azSub}/resourceGroups?api-version=2016-09-01" -H "Authorization: Bearer ${azKey}" |\
-  python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
-azDb=$(curl "${azUrl}${azRg}/providers/Microsoft.DBforMariaDB/servers?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
+azWrg=${azSub}/resourceGroups/${prefix}Workers
+azDrg=${azSub}/resourceGroups/${prefix}Databases
+azGit=$(curl "${azUrl}${azWrg}/providers/Microsoft.Web/sites/ta-softsw-web/config/publishingcredentials/list?api-version=2016-08-01" -d "" -H "Authorization: Bearer ${azKey}" |\
+  python -c "import sys,json; print(json.load(sys.stdin)['properties']['scmUri'])")/${site}-web.git
+
+azDb=$(curl "${azUrl}${azDrg}/providers/Microsoft.DBforMariaDB/servers?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
 azDbUrl=$(curl "${azUrl}${azDb}?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['properties']['fullyQualifiedDomainName'])")
 azDbUser=$(curl "${azUrl}${azDb}?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['properties']['administratorLogin'])")
+
+
 azVaultUri=$(curl "${azUrl}${azRg}/providers/Microsoft.KeyVault/vaults/ta-swKeyVault?api-version=2018-02-14" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['properties']['vaultUri'])")
 
@@ -53,9 +61,6 @@ azDeplPwdVer=$(curl "${azVaultUri}secrets/tasoftsw/versions?maxresults=1&api-ver
   python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
 azDeplPwd=$(curl "${azDeplPwdVer}?api-version=7.0" -H "Authorization: Bearer ${azVaultKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['value'])")
-
-azWebFtp=$(curl "${azUrl}${azRg}/providers/Microsoft.Web/sites/ta-swWebApp/config/publishingcredentials/list?api-version=2016-08-01" -H "Authorization: Bearer ${azKey}" |\
-  python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
 
 # Deploy ODBC
 cat > /etc/odbc.ini << EOF

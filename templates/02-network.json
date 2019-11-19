@@ -89,7 +89,7 @@
                         "direction": "Inbound",
                         "sourceAddressPrefix": "*",
                         "sourcePortRange": "*",
-                        "destinationAddressPrefix": "*",
+                        "destinationAddressPrefix": "VirtualNetwork",
                         "destinationPortRange": "22"
                     }
                 },
@@ -107,7 +107,7 @@
                         "direction": "Inbound",
                         "sourceAddressPrefix": "*",
                         "sourcePortRange": "*",
-                        "destinationAddressPrefix": "*",
+                        "destinationAddressPrefix": "VirtualNetwork",
                         "destinationPortRange": "5060"
                     }
                 },
@@ -125,8 +125,26 @@
                         "direction": "Inbound",
                         "sourceAddressPrefix": "*",
                         "sourcePortRange": "*",
-                        "destinationAddressPrefix": "*",
+                        "destinationAddressPrefix": "VirtualNetwork",
                         "destinationPortRange": "16384-32768"
+                    }
+                },
+                {
+                    "apiVersion": "2019-02-01",
+                    "name": "RTP",
+                    "type": "securityRules",
+                    "dependsOn": [
+                        "secGroup"
+                    ],
+                    "properties": {
+                        "priority": 1300,
+                        "protocol": "Icmp",
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "VirtualNetwork",
+                        "destinationPortRange": "*"
                     }
                 }
             ]

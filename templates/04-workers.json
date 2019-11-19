@@ -51,6 +51,7 @@
         }
     },
     "variables": {
+        "deployName": "[substring(deployment().name, 3)]",
         "dbVersion": "10.2",
         "dbSku": {
             "Basic": {
@@ -216,7 +217,7 @@
                         }
                     },
                     "metadata": {
-                        "protectedSettings_commandToExecute": "[concat('curl -Lo /usr/local/src/deploy.sh ', parameters('deployScript'), ' && sh /usr/local/src/deploy.sh')]"
+                        "protectedSettings_commandToExecute": "[concat('curl -Lo /usr/local/src/deploy.sh ', parameters('deployScript'), ' && sh /usr/local/src/deploy.sh ', parameters('deployPrefix'), ' ', parameters('siteName'))]"
                     }
                 }
             ]
@@ -229,7 +230,7 @@
                 "[concat('swSipVm-0', copyIndex(1))]"
             ],
             "properties": {
-                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
                 "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', concat('swSipVm-0', copyIndex(1))), '2019-03-01', 'Full').identity.principalId]",
                 "scope": "[resourceGroup().id]"
             },

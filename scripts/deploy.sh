@@ -1,6 +1,14 @@
 #!/bin/bash
-
-#This script finishes the deployment from softswitch VM
+#
+# This script finishes the deployment from softswitch VM
+#
+# Usage:
+# bash deploy.sh prefix site
+#
+# Parameters:
+#
+# prefix: Two-letter prefix used during deployment (deployment 'deployPrefix' param)
+# site:   Name of deployed site (deployment 'siteName' param)
 
 prefix=$1
 site=$2
@@ -25,6 +33,7 @@ yum -y install\
   freeswitch-sounds-en-us-callie-8000\
   freeswitch-sounds-music-8000\
   freeswitch-xml-curl\
+  git\
   mysql-connector-odbc\
   nginx\
   rh-php72-php-fpm\
@@ -40,24 +49,25 @@ azSub=$(curl "${azUrl}/subscriptions?api-version=2016-09-01" -H "Authorization: 
   python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
 azWrg=${azSub}/resourceGroups/${prefix}Workers
 azDrg=${azSub}/resourceGroups/${prefix}Databases
+
+#azGit is the Web deployment address
 azGit=$(curl "${azUrl}${azWrg}/providers/Microsoft.Web/sites/ta-softsw-web/config/publishingcredentials/list?api-version=2016-08-01" -d "" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['properties']['scmUri'])")/${site}-web.git
 
-azDb=$(curl "${azUrl}${azDrg}/providers/Microsoft.DBforMariaDB/servers?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
+azDb=$(curl "${azUrl}${azWrg}/providers/Microsoft.DBforMariaDB/servers?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
 azDbUrl=$(curl "${azUrl}${azDb}?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['properties']['fullyQualifiedDomainName'])")
 azDbUser=$(curl "${azUrl}${azDb}?api-version=2018-06-01" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['properties']['administratorLogin'])")
 
-
-azVaultUri=$(curl "${azUrl}${azRg}/providers/Microsoft.KeyVault/vaults/ta-swKeyVault?api-version=2018-02-14" -H "Authorization: Bearer ${azKey}" |\
+azVaultUri=$(curl "${azUrl}${azWrg}/providers/Microsoft.KeyVault/vaults/ta-swKeyVault?api-version=2018-02-14" -H "Authorization: Bearer ${azKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['properties']['vaultUri'])")
 
 azVaultUrl="https://vault.azure.net"
 azVaultKey=$(curl "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=${azVaultUrl}" -H Metadata:true |\
   python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
-azDeplPwdVer=$(curl "${azVaultUri}secrets/tasoftsw/versions?maxresults=1&api-version=7.0" -H "Authorization: Bearer ${azVaultKey}" |\
+azDeplPwdVer=$(curl "${azVaultUri}secrets/${site}-admin/versions?maxresults=1&api-version=7.0" -H "Authorization: Bearer ${azVaultKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['value'][0]['id'])")
 azDeplPwd=$(curl "${azDeplPwdVer}?api-version=7.0" -H "Authorization: Bearer ${azVaultKey}" |\
   python -c "import sys,json; print(json.load(sys.stdin)['value'])")

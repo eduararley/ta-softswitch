@@ -19,7 +19,7 @@
                 "Basic",
                 "Standard"
             ],
-            "defaultValue": "Basic",
+            "defaultValue": "Standard",
             "metadata": {
                 "description": "Package size"
             }
@@ -51,8 +51,7 @@
         }
     },
     "variables": {
-        "deployName": "[substring(deployment().name, 3)]",
-        "dbVersion": "10.2",
+        "dbVersion": "10.3",
         "dbSku": {
             "Basic": {
                 "name": "B_Gen5_1",
@@ -107,6 +106,7 @@
             },
             "resources": [
                 {
+                    "condition": "[equals(parameters('sku'),'Standard')]",
                     "apiVersion": "2018-06-01",
                     "name": "allowFromVnet",
                     "type": "virtualNetworkRules",
@@ -116,6 +116,18 @@
                     "properties": {
                         "virtualNetworkSubnetId": "[concat(resourceId(concat(parameters('deployPrefix'), 'Network'), 'Microsoft.Network/virtualNetworks', 'virtNet'), '/subnets/', 'subNet')]",
                         "ignoreMissingVnetServiceEndpoint": true
+                    }
+                },
+                {
+                    "apiVersion": "2018-06-01",
+                    "name": "AllowAllWindowsAzureIps",
+                    "type": "firewallRules",
+                    "dependsOn": [
+                        "swDatabase"
+                    ],
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
                     }
                 }
             ]
@@ -300,19 +312,5 @@
                 }
             ]
         }
-    ],
-    "outputs": {
-        "DbServerName": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.DBforMariaDB/servers', 'swDatabase')).fullyQualifiedDomainName]"
-        },
-        "DbUser": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.DBforMariaDB/servers', 'swDatabase')).administratorLogin]"
-        },
-        "webUrl": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Web/sites', 'ta-softsw-web')).defaultHostName]"
-        }
-    }
+    ]
 }

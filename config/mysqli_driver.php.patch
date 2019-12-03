@@ -1,31 +1,34 @@
---- web/system/database/drivers/mysqli/mysqli_driver.php
-+++ web/system/database/drivers/mysqli/mysqli_driver.php
-@@ -67,16 +67,24 @@
-         * @access      private called by the base class
-         * @return      resource
-         */
--       function db_connect()
-+    function db_connect()
-        {
-+               $mysqli = mysqli_init();
-+               mysqli_ssl_set(
-+                       $mysqli, NULL, NULL, "BaltimoreCyberTrustRoot.crt.pem", NULL, NULL
-+               );
-                if ($this->port != '')
-                {
--                       return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database, $this->port);
-+                       @mysqli_real_connect(
-+                               $mysqli, $this->hostname, $this->username, $this->password, $this->database, $this->port
-+                       );
-                } else
-                {
--                       return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database);
-+                       @mysqli_real_connect(
-+                               $mysqli, $this->hostname, $this->username, $this->password, $this->database, 3306
-+                       );
-                }
--
-+               return $mysqli;
-        }
+--- ta-softswitch/ASTPP/web_interface/astpp/system/database/drivers/mysqli/mysqli_driver.php	2019-12-03 05:43:36.683858173 +0000
++++ web/system/database/drivers/mysqli/mysqli_driver.php	2019-12-03 05:50:36.019789961 +0000
+@@ -69,13 +69,22 @@
+ 	 */
+ 	function db_connect()
+ 	{
++		$mysqli = mysqli_init();
++		mysqli_ssl_set(
++			$mysqli, NULL, NULL, "BaltimoreCyberTrustRoot.crt.pem", NULL, NULL
++		)
+ 		if ($this->port != '')
+ 		{
+-			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database, $this->port);
++			@mysqli_real_connect(
++				$mysqli, $this->hostname, $this->username, $this->password, $this->database, $this->port
++			);
+ 		} else
+ 		{
+-			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database);
++			@mysqli_real_connect(
++				$mysqli, $this->hostname, $this->username, $this->password, $this->database, 3306
++			);
+ 		}
++		return $mysqli;
  
-        // --------------------------------------------------------------------
+ 	}
+ 
+@@ -770,4 +779,4 @@
+ 
+ 
+ /* End of file mysqli_driver.php */
+-/* Location: ./system/database/drivers/mysqli/mysqli_driver.php */
+\ No newline at end of file
++/* Location: ./system/database/drivers/mysqli/mysqli_driver.php */

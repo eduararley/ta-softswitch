@@ -13,7 +13,8 @@
 prefix=$1
 site=$2
 
-deployrepo=https://github.com/eduararley/ta-softswitch.git
+deployRepo=https://github.com/eduararley/ta-softswitch.git
+deployDir=/dev/shm/deploy
 
 function pkg_install() {
   #
@@ -40,6 +41,7 @@ function pkg_install() {
     git\
     mysql-connector-odbc\
     nginx\
+    patch\
     rh-php72-php-fpm\
     rh-php72-php-gd\
     rh-php72-php-mbstring\
@@ -95,27 +97,31 @@ EOF
 
 function git_clone() {
   local current_dir=$(pwd)
-  cd /dev/shm
-  git clone --recursive https://github.com/eduararley/ta-softswitch.git
+  rm -rf ${deployDir}
+  mkdir -p ${deployDir}
+  cd ${deployDir}
+  git clone --recursive ${deployRepo}
   cp -r ta-softswitch/ASTPP/web_interface/astpp web
   cd ${current_dir}
 }
 
 function git_patch() {
   local current_dir=$(pwd)
-  cd /dev/shm/web
+  cd ${deployDir}
+  command cp ta-softswitch/config/BaltimoreCyberTrustRoot.crt.pem web
+  patch < ta-softswitch/config/mysqli_driver.php.patch
   sed -i\
     "s/\$astpp_config \['dbhost'\]/\"${azDbUrl}\"/g"\
-    application/config/database.php
+    web/application/config/database.php
   sed -i\
     "s/\$astpp_config \['dbuser'\]/\"${azDbUser}@${azDbUrl}\"/g"\
-    application/config/database.php
+    web/application/config/database.php
   sed -i\
     "s/\$astpp_config \['dbpass'\]/\"${azDeplPwd}\"/g"\
-    application/config/database.php
+    web/application/config/database.php
   sed -i\
     "s/\$astpp_config \['dbname'\]/\"astpp\"/g"\
-    application/config/database.php
+    web/application/config/database.php
   cd ${current_dir}
 }
 
@@ -135,8 +141,8 @@ function git_publish() {
 function db_prepare() {
   yum -y install rh-mariadb103-mariadb
   local current_dir=$(pwd)
-  command cp /dev/shm/ta-softswitch/ASTPP/database/astpp-4.0.sql /dev/shm
-  command cp /dev/shm/ta-softswitch/ASTPP/database/astpp-4.0.1.sql /dev/shm
+  command cp /dev/shm/ta-softswitch/ASTPP/database/astpp-4.0.sql /dev/shm/tmp
+  command cp /dev/shm/ta-softswitch/ASTPP/database/astpp-4.0.1.sql /dev/shm/tmp
   sed -i 's/DEFINER=`root`@`localhost` //g' /dev/shm/astpp-4.0.sql
   sed -i 's/DEFINER=`root`@`localhost` //g' /dev/shm/astpp-4.0.1.sql
   sed -i 's/COLLATE=utf8mb4_0900_ai_ci/COLLATE=utf8mb4_general_ci/g' /dev/shm/astpp-4.0.sql

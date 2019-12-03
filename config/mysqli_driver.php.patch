@@ -1,5 +1,5 @@
---- ta-softswitch/ASTPP/web_interface/astpp/system/database/drivers/mysqli/mysqli_driver.php 2019-12-03 04:28:43.441534336 +0000
-+++ web/system/database/drivers/mysqli/mysqli_driver.php    2019-12-03 04:33:33.352220870 +0000
+--- web/system/database/drivers/mysqli/mysqli_driver.php 2019-12-03 04:28:43.441534336 +0000
++++ web/system/database/drivers/mysqli/mysqli_driver.php 2019-12-03 04:33:33.352220870 +0000
 @@ -67,16 +67,24 @@
          * @access      private called by the base class
          * @return      resource

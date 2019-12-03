@@ -1,0 +1,25 @@
+70c70
+< 	function db_connect()
+---
+>     function db_connect()
+71a72,75
+> 		$mysqli = mysqli_init();
+> 		mysqli_ssl_set(
+> 			$mysqli, NULL, NULL, "BaltimoreCyberTrustRoot.crt.pem", NULL, NULL
+> 		);
+74c78,80
+< 			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database, $this->port);
+---
+> 			@mysqli_real_connect(
+> 				$mysqli, $this->hostname, $this->username, $this->password, $this->database, $this->port
+> 			);
+77c83,85
+< 			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database);
+---
+> 			@mysqli_real_connect(
+> 				$mysqli, $this->hostname, $this->username, $this->password, $this->database, 3306
+> 			);
+79c87
+< 
+---
+> 		return $mysqli;

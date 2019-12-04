@@ -7,7 +7,7 @@
 +		$mysqli = mysqli_init();
 +		mysqli_ssl_set(
 +			$mysqli, NULL, NULL, "BaltimoreCyberTrustRoot.crt.pem", NULL, NULL
-+		)
++		);
  		if ($this->port != '')
  		{
 -			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database, $this->port);

@@ -108,8 +108,8 @@ function git_clone() {
 function git_patch() {
   local current_dir=$(pwd)
   cd ${deployDir}
+  patch -p0 -fr - < ta-softswitch/config/mysqli_driver.php.patch
   command cp ta-softswitch/config/BaltimoreCyberTrustRoot.crt.pem web
-  patch < ta-softswitch/config/mysqli_driver.php.patch
   sed -i\
     "s/\$astpp_config \['dbhost'\]/\"${azDbUrl}\"/g"\
     web/application/config/database.php
@@ -127,7 +127,7 @@ function git_patch() {
 
 function git_publish() {
   local current_dir=$(pwd)
-  cd /dev/shm/web
+  cd ${deployDir}/web
   git init
   git config user.name autodeploy
   git config user.email autodeploy@${HOSTNAME}

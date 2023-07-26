@@ -95,6 +95,7 @@ PASSWORD  = ${azDeplPwd}
 EOF
 }
 
+### Clone repo
 function git_clone() {
   local current_dir=$(pwd)
   rm -rf ${deployDir}
@@ -105,6 +106,7 @@ function git_clone() {
   cd ${current_dir}
 }
 
+### Patch script
 function git_patch() {
   local current_dir=$(pwd)
   cd ${deployDir}
